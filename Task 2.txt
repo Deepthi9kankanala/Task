@@ -1,0 +1,222 @@
+1) Country wise oldest and latest film released
+
+   Sample Output :
+    
+   Country  | Oldest Film  |  Latest Film
+    India   |   Film Name  |   Film Name
+
+Query:
+
+SELECT 
+    country,
+    (SELECT title FROM moviess m2 WHERE m1.country = m2.country ORDER BY release_year ASC LIMIT 1) AS oldest_film,
+    (SELECT title FROM moviess m3 WHERE m1.country = m3.country ORDER BY release_year DESC LIMIT 1) AS latest_film
+FROM 
+    (SELECT DISTINCT country FROM moviess) m1;
+
+=================================================
+2) Stacked Bar chart of number of movies vs number of TV shows released per year
+
+SELECT
+    release_year,
+    SUM(CASE WHEN type = 'Movie' THEN 1 ELSE 0 END) AS num_movies,
+    SUM(CASE WHEN type = 'TV Show' THEN 1 ELSE 0 END) AS num_tv_shows
+FROM
+    moviess
+    
+GROUP BY
+    release_year;
+
+
+=========================================================
+3) Who directed the most number of films and country associated with director
+
+SELECT director, COUNT(*) as film_count, country
+FROM moviess
+WHERE director IS NOT NULL AND director != ''
+GROUP BY director, country
+ORDER BY film_count DESC
+LIMIT 1;
+
+
+
+OUTPUT:
+director    film_count  country
+Jay Karas    13                   United Sates
+================================================================
+
+4) Which actor and actress casted in most number of films
+
+SELECT TRIM(cast) AS cast, COUNT(*) AS film_count
+FROM moviess
+WHERE cast IS NOT NULL
+      AND cast != ''
+GROUP BY TRIM(cast)
+ORDER BY film_count DESC
+LIMIT 1;
+
+
+===========================================================
+
+5) How many Thriller movies got released in 2018?
+
+
+SELECT
+    COUNT(*) AS num_thriller_movies
+FROM
+    moviess
+WHERE
+    release_year = 2018
+    AND listed_in LIKE '%Thrillers%';
+
+==================================
+
+
+
+6) Which genre of movies was released highest in each year?
+
+SELECT release_year, listed_in AS genre, COUNT(*) AS movie_count
+FROM moviess
+GROUP BY release_year, genre
+HAVING COUNT(*) = (
+    SELECT MAX(movie_count_per_year)
+    FROM (
+        SELECT release_year, COUNT(*) AS movie_count_per_year
+        FROM moviess
+        GROUP BY release_year
+    ) AS subquery
+    WHERE moviess.release_year = subquery.release_year
+)
+ORDER BY release_year;
+
+=================================================
+
+
+7) How many Spanish based Romantic TV Shows where released in 2017?
+
+SELECT
+    COUNT(*) AS num_spanish_romantic_tv_shows
+FROM
+    movies
+WHERE
+    release_year = 2017
+    AND country = 'Spain'
+    AND listed_in LIKE '%Romantic TV Shows%';
+=================================================
+
+8) Find the reality shows which has more than 5 seasons?
+
+SELECT *
+FROM moviess
+WHERE type = 'TV Show'
+AND listed_in LIKE '%Reality TV%'
+AND duration > 5;
+
+=====================================================
+
+9) Movies with more than 120 minutes and released in year 2016,2017 and 2018.
+
+SELECT
+    *
+FROM
+    moviess
+WHERE
+    duration > 120
+    AND release_year IN (2016, 2017, 2018);
+
+===========================================================================
+
+10) Which month has the highest number of films released.Plot the chart?
+SELECT
+    MONTHNAME(date_added) AS month,
+    COUNT(*) AS num_films_released
+FROM
+    moviess
+GROUP BY
+    MONTH(date_added), date_added
+ORDER BY
+    num_films_released DESC
+LIMIT 1;
+
+
+====================================================================
+
+11) Find these :
+           a) Year where 5th most highest adult movies got released
+
+SELECT DISTINCT release_year
+FROM (
+    SELECT release_year, COUNT(*) AS num_adult_movies
+    FROM moviess
+    WHERE rating = 'TV-MA'
+    GROUP BY release_year
+    ORDER BY num_adult_movies DESC
+    LIMIT 5
+) AS subquery
+ORDER BY release_year ASC
+LIMIT 1;
+================================================================
+           b) Which actor appeared most in general auidence movies
+SELECT cast, COUNT(*) AS num_movies
+FROM moviess
+WHERE rating != 'TV-MA' AND rating != 'TV-14' AND cast IS NOT NULL AND cast != ''
+GROUP BY cast
+ORDER BY num_movies DESC
+LIMIT 1;
+
+==========================================================
+           c) Who directed most parental guidance movies
+
+SELECT director, COUNT(*) AS movie_count
+FROM movies
+WHERE rating IN ('TV-G', 'TV-PG') AND director IS NOT NULL AND director != ''
+GROUP BY director
+ORDER BY movie_count DESC
+LIMIT 1;
+
+=======================================
+           d) Country which release most adult movies
+
+SELECT country, COUNT(*) AS num_adult_movies
+FROM moviess
+WHERE rating = 'TV-MA'
+GROUP BY country
+ORDER BY num_adult_movies DESC
+LIMIT 1;
+==========================================
+           e) Plot a stacked bar graph yearly release of general movies vs adult movies year 
+
+SELECT release_year,
+       SUM(CASE WHEN rating != 'TV-MA' THEN 1 ELSE 0 END) AS num_general_movies,
+       SUM(CASE WHEN rating = 'TV-MA' THEN 1 ELSE 0 END) AS num_adult_movies
+FROM moviess
+GROUP BY release_year
+ORDER BY release_year;
+=========================================================
+    Hint :  Use Rating column
+
+12)  Which director consistently released movies and his time span 
+
+SELECT director,
+       MIN(release_year) AS start_year,
+       MAX(release_year) AS end_year,
+       COUNT(*) AS num_movies
+FROM moviess
+GROUP BY director
+HAVING num_movies > 1
+ORDER BY num_movies DESC;
+========================================================
+     
+13)  Director and Actor which worked with most number of countries
+
+SELECT director, COUNT(DISTINCT country) AS num_countries
+FROM moviess
+WHERE director IS NOT NULL AND director != ''
+GROUP BY director
+ORDER BY num_countries DESC
+LIMIT 1;
+
+
+
+====================================================================
+

@@ -1,0 +1,248 @@
+Table 1 shows marks scored by 5 students in an examination. Answer the questions given below(Pass mark - 25)
+Table 2 shows the sutdent details
+
+1. Create SQL tables
+2. Get the IDs who got more than 60
+3. Get the name and ID of top scorer
+4. Who got the minimum mark in Computer Science
+5. List the student's Name and ID and marks in scored by each student in Mathematics sorted by marks.
+6. Name the failed students and subjects
+7. Get the name and subject for which each student scored maximum
+8. Get the total number of students passed the eamination
+9. Get the total marks scored by each student
+10. name the students with passmark
+
+
+=====================================================================
+
+1. Create SQL Tables :
+
+Table 1: Studentmarks
+-------------------------------
+
+CREATE TABLE task1.studentmarks (
+  StudentID INT NOT NULL,
+  Subject` VARCHAR(60) NOT NULL,
+  Marks INT NULL,
+  PRIMARY KEY (StudentID, Subject));
+
+INSERT INTO task1.studentmarks (StudentID, Subject, Marks) 
+VALUES
+ (4121, 'Sociology', 80);
+(4121, 'Mathematics', 56),
+    (4121, 'Accountancy', 68),
+    (4121, 'Computer science', 77),
+    (4121, 'Economics', 95),
+    (4122, 'Sociology', 43),
+    (4122, 'Mathematics', 20),
+    (4122, 'Accountancy', 21),
+    (4122, 'Computer science', 59),
+    (4122, 'Economics', 67),
+    (4123, 'Sociology', 44),
+    (4123, 'Mathematics', 90),
+    (4123, 'Accountancy', 87),
+    (4123, 'Computer science', 85),
+    (4123, 'Economics', 60),
+    (4124, 'Sociology', 97),
+    (4124, 'Mathematics', 39),
+    (4124, 'Accountancy', 73),
+    (4124, 'Computer science', 82),
+    (4124, 'Economics', 50),
+    (4125, 'Sociology', 98),
+    (4125, 'Mathematics', 37),
+    (4125, 'Accountancy', 59),
+    (4125, 'Computer science', 77),
+    (4125, 'Economics', 64);
+
+
+
+Table 2: Students
+----------------------
+
+CREATE TABLE task1.students (
+  StudentID INT NOT NULL,
+  Name  VARCHAR(45) NULL,
+  PRIMARY KEY (`StudentID`));
+
+
+INSERT INTO task1.students (StudentID,Name)
+VALUES
+    (4121, 'Micheal'),
+    (4122,'John'),
+    (4123,'Angela'),
+    (4124,'Cindy'),
+    (4125,'Tom');
+
+
+======================================
+
+
+2. Get the IDs who got more than 60
+-------------------------------------------------
+
+SELECT DISTINCT StudentID
+FROM task1.studentmarks
+WHERE Marks > 60;
+
+
+OUTPUT:
+
+4121
+4122
+4123
+4124
+4125
+
+=====================================
+3. Get the name and ID of top scorer
+
+SELECT s.StudentID, s.Name
+FROM task1.students s
+JOIN (
+    SELECT StudentID, MAX(Marks) 
+    FROM task1.studentmarks
+    GROUP BY StudentID
+) m ON s.StudentID = m.StudentID
+JOIN task1.studentmarks sm ON sm.StudentID = s.StudentID AND sm.Marks = m.MaxMarks;
+
+
+OUTPUT:
+
+4121	Micheal
+4122	John
+4123	Angela
+4124	Cindy
+4125	Tom
+===================================================================================
+
+4. Who got the minimum mark in Computer Science
+
+SELECT StudentID, Marks AS minmarks
+FROM task1.studentmarks
+WHERE Subject = 'Computer Science'
+ORDER BY Marks ASC
+LIMIT 1;
+
+OUTPUT:
+
+4122	59
+
+==========================================================================
+
+
+5. List the student's Name and ID and marks in scored by each student in Mathematics sorted by marks.
+
+SELECT s.StudentID, s.Name, sm.Marks
+FROM task1.students s
+JOIN task1.studentmarks sm ON s.StudentID = sm.StudentID
+WHERE sm.Subject = 'Mathematics'
+ORDER BY sm.Marks DESC;
+
+
+OUTPUT:
+
+4123	Angela	90
+4121	Micheal	56
+4124	Cindy	39
+4125	Tom	37
+4122	John	20
+
+=================================================================================
+
+6. Name the failed students and subjects
+
+
+SELECT s.Name A, sm.Subject AS failed
+FROM task1.students s
+JOIN task1.studentmarks sm ON s.StudentID = sm.StudentID
+WHERE sm.Marks < 25;
+
+OUTPUT:
+A                   Failed
+John	Accountancy
+John	Mathematics
+===========================================================
+7. Get the name and subject for which each student scored maximum
+
+SELECT s.Name, maxscores.Subject AS MaxScored
+FROM task1.students s
+JOIN (
+    SELECT StudentID, Subject, MAX(Marks) AS MaxMarks
+    FROM task1.studentmarks
+    GROUP BY StudentID, Subject
+) maxscores ON s.StudentID = maxscores.StudentID AND s.StudentID = maxscores.StudentID;
+
+
+OUTPUT:
+Name         MaxScored
+Micheal	Accountancy
+Micheal	Computer Science
+Micheal	Economics
+Micheal	Mathematics
+Micheal	Sociology
+John	Accountancy
+John	Computer Science
+John	Economics
+John	Mathematics
+John	Sociology
+Angela	Accountancy
+Angela	Computer Science
+Angela	Economics
+Angela	Mathematics
+Angela	Sociology
+Cindy	Accountancy
+Cindy	Computer Science
+Cindy	Economics
+Cindy	Mathematics
+Cindy	Sociology
+Tom	Accountancy
+Tom	Computer Science
+Tom	Economics
+Tom	Mathematics
+Tom	Sociology
+========================================================================================
+
+8. Get the total number of students passed the eamination 
+
+
+SELECT COUNT(DISTINCT StudentID) AS pass
+FROM task1.studentmarks
+WHERE Marks >= 25;
+
+OUTPUT"
+
+pass
+5
+
+==========================================================
+9. Get the total marks scored by each student
+
+SELECT StudentID, SUM(Marks) AS TotalMarks
+FROM task1.studentmarks
+GROUP BY StudentID;
+
+
+OUtPUT:
+StudentID TotalMarks
+4121	376
+4122	210
+4123	366
+4124	341
+4125	335
+
+=====================================
+
+10.Name the student with passmark
+
+SELECT DISTINCT s.Name
+FROM task1.students s
+JOIN task1.studentmarks sm ON s.StudentID = sm.StudentID
+WHERE sm.Marks = 25;
+
+OUTPUT:
+
+Micheal
+John
+Angela
+Cindy
+Tom
